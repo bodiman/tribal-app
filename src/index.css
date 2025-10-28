@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Disable transitions during resize for instant response */
+.resizing {
+  transition: none !important;
+}
