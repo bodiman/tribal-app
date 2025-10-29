@@ -6,6 +6,9 @@ import { createGraph, createNode } from './core';
 import { GraphCanvas } from './renderer';
 import { EditorPanel, Toolbar } from './ui';
 import { GraphPersistence } from './core/serializer';
+import { AuthProvider } from './contexts/AuthContext';
+import { AuthModal } from './components/auth/AuthModal';
+import { UserMenu } from './components/auth/UserMenu';
 
 // Sample graph for demo
 const createSampleGraph = (): Graph => {
@@ -22,11 +25,12 @@ const createSampleGraph = (): Graph => {
   );
 };
 
-function App() {
+function AppContent() {
   const [graph, setGraph] = useState<Graph>(createSampleGraph());
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [persistence] = useState(() => new GraphPersistence());
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Auto-save to IndexedDB
   useEffect(() => {
@@ -190,6 +194,8 @@ function App() {
         graph={graph}
         onGraphChange={handleGraphChange}
         onNewGraph={handleNewGraph}
+        onShowAuth={() => setShowAuthModal(true)}
+        userMenu={<UserMenu />}
       />
       
       <div className="flex flex-1 min-h-0">
@@ -214,7 +220,20 @@ function App() {
           onClose={handleCloseEditor}
         />
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

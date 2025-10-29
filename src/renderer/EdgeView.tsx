@@ -29,7 +29,7 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
-  const [isResizing, setIsResizing] = useState(false);
+  const [_isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef<{ 
     width: number; 
     height: number; 

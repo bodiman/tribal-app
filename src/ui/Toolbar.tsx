@@ -3,19 +3,25 @@ import type { Graph } from '../core/schema';
 import { createNode, createEdge } from '../core/schema';
 import { GraphSerializer } from '../core/serializer';
 import { TribalDSLParser } from '../core/parser';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ToolbarProps {
   graph: Graph;
   onGraphChange: (graph: Graph) => void;
   onNewGraph: () => void;
+  onShowAuth?: () => void;
+  userMenu?: React.ReactNode;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   graph,
   onGraphChange,
   onNewGraph,
+  onShowAuth,
+  userMenu,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isAuthenticated } = useAuth();
 
   const addNode = () => {
     const nodeCount = graph.nodes.length;
@@ -161,10 +167,38 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center space-x-4 text-sm text-gray-600">
-        <span>{graph.nodes.length} nodes</span>
-        <span>{graph.edges.length} edges</span>
+      {/* Stats and Auth */}
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 text-sm text-gray-600 mr-4">
+          <span>{graph.nodes.length} nodes</span>
+          <span>{graph.edges.length} edges</span>
+        </div>
+        
+        {/* Cloud Sync Button */}
+        {isAuthenticated && (
+          <button
+            onClick={() => {
+              // TODO: Implement cloud sync
+              console.log('Cloud sync not implemented yet');
+            }}
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="Sync with Cloud"
+          >
+            📡 Sync
+          </button>
+        )}
+        
+        {/* Auth Section */}
+        {isAuthenticated ? (
+          userMenu
+        ) : (
+          <button
+            onClick={onShowAuth}
+            className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Sign In
+          </button>
+        )}
       </div>
 
       {/* Hidden file input */}
