@@ -34,10 +34,25 @@ export const GraphSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
+// Extended graph schema for server-side graphs with metadata
+export const ServerGraphSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  user_id: z.string(),
+  is_public: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  nodes: z.array(NodeSchema),
+  edges: z.array(EdgeSchema),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
 // TypeScript types derived from Zod schemas
 export type Node = z.infer<typeof NodeSchema>;
 export type Edge = z.infer<typeof EdgeSchema>;
 export type Graph = z.infer<typeof GraphSchema>;
+export type ServerGraph = z.infer<typeof ServerGraphSchema>;
 
 // Validation functions
 export const validateNode = (data: unknown): Node => {

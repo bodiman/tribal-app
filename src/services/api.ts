@@ -1,4 +1,4 @@
-import type { Graph, Node, Edge } from '../core';
+import type { Graph, Node, Edge, ServerGraph } from '../core';
 
 // API Types matching the server
 export interface User {
@@ -53,13 +53,13 @@ export interface SearchRequest {
 }
 
 export interface SearchResponse {
-  graphs: Graph[];
+  graphs: ServerGraph[];
   total: number;
   has_more: boolean;
 }
 
 export interface GraphsResponse {
-  graphs: Graph[];
+  graphs: ServerGraph[];
   total: number;
   has_more: boolean;
 }
@@ -167,8 +167,8 @@ export class ApiClient {
   }
 
   // Graph methods
-  async createGraph(data: CreateGraphRequest): Promise<Graph> {
-    return this.request<Graph>('/api/v1/graphs', {
+  async createGraph(data: CreateGraphRequest): Promise<ServerGraph> {
+    return this.request<ServerGraph>('/api/v1/graphs', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -180,12 +180,12 @@ export class ApiClient {
     );
   }
 
-  async getGraph(id: string): Promise<Graph> {
-    return this.request<Graph>(`/api/v1/graphs/${id}`);
+  async getGraph(id: string): Promise<ServerGraph> {
+    return this.request<ServerGraph>(`/api/v1/graphs/${id}`);
   }
 
-  async updateGraph(id: string, data: UpdateGraphRequest): Promise<Graph> {
-    return this.request<Graph>(`/api/v1/graphs/${id}`, {
+  async updateGraph(id: string, data: UpdateGraphRequest): Promise<ServerGraph> {
+    return this.request<ServerGraph>(`/api/v1/graphs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -212,8 +212,8 @@ export class ApiClient {
     );
   }
 
-  async getPublicGraph(id: string): Promise<Graph> {
-    return this.request<Graph>(`/api/v1/public/graphs/${id}`);
+  async getPublicGraph(id: string): Promise<ServerGraph> {
+    return this.request<ServerGraph>(`/api/v1/public/graphs/${id}`);
   }
 
   // Graph sharing methods
@@ -273,6 +273,7 @@ export type {
   Graph,
   Node,
   Edge,
+  ServerGraph,
 };
 
 export default apiClient;
