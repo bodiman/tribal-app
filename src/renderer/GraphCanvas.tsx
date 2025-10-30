@@ -16,12 +16,14 @@ import {
   useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { Shuffle, Layers } from 'lucide-react';
 
 import type { Graph, Node, Edge } from '../core/schema';
 import { createNode, createEdge } from '../core/schema';
 import { NodeView } from './NodeView';
 import { EdgeView } from './EdgeView';
 import { ContextMenu } from '../ui/ContextMenu';
+import { applyAutoLayout, applyForceDirectedLayout, applyHierarchicalLayout, isLayoutCluttered } from '../utils/graphLayout';
 
 interface GraphCanvasProps {
   graph: Graph;
@@ -338,6 +340,55 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     onGraphChange(updatedGraph);
   }, [contextMenu.contextNode, graph, onGraphChange]);
 
+  // Layout functions
+  const { getViewport } = useReactFlow();
+
+  const applyLayout = useCallback((layoutType: 'auto' | 'force' | 'hierarchical') => {
+    const viewport = getViewport();
+    const layoutOptions = {
+      width: Math.max(1200, window.innerWidth),
+      height: Math.max(800, window.innerHeight),
+      iterations: 300,
+    };
+
+    let result;
+    switch (layoutType) {
+      case 'force':
+        result = applyForceDirectedLayout(graph.nodes, graph.edges, layoutOptions);
+        break;
+      case 'hierarchical':
+        result = applyHierarchicalLayout(graph.nodes, graph.edges, layoutOptions);
+        break;
+      case 'auto':
+      default:
+        result = applyAutoLayout(graph.nodes, graph.edges, layoutOptions);
+        break;
+    }
+
+    const updatedGraph: Graph = {
+      ...graph,
+      nodes: result.nodes,
+      edges: result.edges,
+    };
+
+    onGraphChange(updatedGraph);
+  }, [graph, onGraphChange, getViewport]);
+
+  const handleAutoLayout = useCallback(() => {
+    applyLayout('auto');
+  }, [applyLayout]);
+
+  const handleForceLayout = useCallback(() => {
+    applyLayout('force');
+  }, [applyLayout]);
+
+  const handleHierarchicalLayout = useCallback(() => {
+    applyLayout('hierarchical');
+  }, [applyLayout]);
+
+  // Automatically suggest layout if graph appears cluttered
+  const shouldSuggestLayout = isLayoutCluttered(graph.nodes) && graph.nodes.length > 2;
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -359,6 +410,53 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       >
         <Controls />
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+        
+        {/* Layout Controls */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+          {shouldSuggestLayout && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-md">
+              <p className="text-sm text-yellow-800 mb-2">
+                Graph appears cluttered. Try auto-layout?
+              </p>
+              <button
+                onClick={handleAutoLayout}
+                className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
+              >
+                Auto Layout
+              </button>
+            </div>
+          )}
+          
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2">
+            <div className="text-xs text-gray-600 mb-2 font-medium">Layout</div>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={handleAutoLayout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                title="Automatically choose best layout"
+              >
+                <Shuffle className="w-4 h-4" />
+                Auto Layout
+              </button>
+              <button
+                onClick={handleForceLayout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                title="Force-directed layout"
+              >
+                <Shuffle className="w-4 h-4" />
+                Force Layout
+              </button>
+              <button
+                onClick={handleHierarchicalLayout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                title="Hierarchical layout"
+              >
+                <Layers className="w-4 h-4" />
+                Hierarchical
+              </button>
+            </div>
+          </div>
+        </div>
       </ReactFlow>
       
       <ContextMenu

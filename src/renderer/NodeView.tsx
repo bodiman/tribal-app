@@ -149,7 +149,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
     <div
       ref={nodeRef}
       className={`
-        border-2 shadow-md min-w-48 max-w-none relative rounded-lg overflow-visible flex flex-col
+        border-2 shadow-md min-w-48 max-w-none relative rounded-lg overflow-hidden flex flex-col
         ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'}
         ${isEditingLabel || isEditingInfo ? 'border-blue-400 shadow-lg' : ''}
         hover:shadow-lg
@@ -211,7 +211,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
       </div>
 
       {/* Info Section */}
-      <div className="px-4 py-3 bg-white rounded-b-md min-h-[2rem] flex flex-col flex-1">
+      <div className="px-4 py-3 bg-white rounded-b-md min-h-[2rem] flex flex-col flex-1 overflow-hidden h-0">
         {isEditingInfo ? (
           <textarea
             ref={textareaRef}
@@ -230,7 +230,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
             title="Double-click to edit info"
           >
             {(editMarkup || node.markup) ? (
-              <div className="prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_strong]:font-bold text-gray-700 overflow-hidden">
+              <div className="prose prose-sm max-w-none text-gray-700 w-full overflow-hidden line-clamp-4">
                 <ReactMarkdown>
                   {editMarkup || node.markup || ''}
                 </ReactMarkdown>

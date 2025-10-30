@@ -304,7 +304,7 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
             minHeight: '4rem',
           }}
           className={`
-            border-2 shadow-md relative rounded-lg overflow-visible flex flex-col
+            border-2 shadow-md relative rounded-lg overflow-hidden flex flex-col
             ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'}
             ${isEditingLabel || isEditingInfo ? 'border-blue-400 shadow-lg' : ''}
             hover:shadow-lg transition-all duration-200
@@ -335,7 +335,7 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
           </div>
 
           {/* Info Section */}
-          <div className="px-3 py-2 bg-white rounded-b-md min-h-[1.5rem] flex flex-col flex-1">
+          <div className="px-3 py-2 bg-white rounded-b-md min-h-[1.5rem] flex flex-col flex-1 overflow-hidden h-0">
             {isEditingInfo ? (
               <textarea
                 ref={textareaRef}
@@ -349,12 +349,12 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
               />
             ) : (
               <div 
-                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1rem] flex-1 flex items-start overflow-hidden"
+                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1rem] flex-1 flex items-start overflow-hidden max-h-full"
                 onDoubleClick={handleInfoDoubleClick}
                 title="Double-click to edit info"
               >
                 {(editMarkup || edge.markup) ? (
-                  <div className="prose prose-xs max-w-none [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-bold [&_strong]:font-bold text-gray-700 w-full overflow-hidden">
+                  <div className="prose prose-xs max-w-none text-gray-700 w-full overflow-hidden line-clamp-3">
                     <ReactMarkdown>
                       {editMarkup || edge.markup || ''}
                     </ReactMarkdown>

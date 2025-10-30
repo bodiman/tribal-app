@@ -13,6 +13,8 @@
     "@monaco-editor/react": "^4.7.0",
     "@reactflow/node-resizer": "^2.2.14",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/d3-force": "^3.0.10",
+    "d3-force": "^3.0.0",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",
