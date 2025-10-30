@@ -354,7 +354,7 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
                 title="Double-click to edit info"
               >
                 {(editMarkup || edge.markup) ? (
-                  <div className="prose prose-xs max-w-none [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-bold [&_strong]:font-bold text-gray-700 w-full">
+                  <div className="prose prose-xs max-w-none [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-bold [&_strong]:font-bold text-gray-700 w-full overflow-hidden">
                     <ReactMarkdown>
                       {editMarkup || edge.markup || ''}
                     </ReactMarkdown>

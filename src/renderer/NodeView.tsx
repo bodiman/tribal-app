@@ -230,7 +230,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
             title="Double-click to edit info"
           >
             {(editMarkup || node.markup) ? (
-              <div className="prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_strong]:font-bold text-gray-700">
+              <div className="prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_strong]:font-bold text-gray-700 overflow-hidden">
                 <ReactMarkdown>
                   {editMarkup || node.markup || ''}
                 </ReactMarkdown>
