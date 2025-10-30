@@ -349,7 +349,7 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
               />
             ) : (
               <div 
-                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1rem] flex-1 flex items-start overflow-auto"
+                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1rem] flex-1 flex items-start overflow-hidden"
                 onDoubleClick={handleInfoDoubleClick}
                 title="Double-click to edit info"
               >
