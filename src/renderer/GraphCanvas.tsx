@@ -344,7 +344,6 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const { getViewport } = useReactFlow();
 
   const applyLayout = useCallback((layoutType: 'auto' | 'force' | 'hierarchical') => {
-    const viewport = getViewport();
     const layoutOptions = {
       width: Math.max(1200, window.innerWidth),
       height: Math.max(800, window.innerHeight),
