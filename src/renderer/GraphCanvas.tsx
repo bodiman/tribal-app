@@ -57,7 +57,6 @@ const convertToReactFlowEdges = (edges: Edge[], onEdgeUpdate?: (edge: Edge) => v
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    // Omit sourceHandle and targetHandle to prevent React Flow validation errors
     type: 'tribal',
     markerEnd: edge.directed ? { type: MarkerType.ArrowClosed } : undefined,
     data: { edge, onEdgeUpdate },

@@ -168,14 +168,11 @@ export const ConnectionSystem: React.FC<ConnectionSystemProps> = ({
     };
 
     const handleMouseUp = (event: MouseEvent) => {
-      console.log('MouseUp detected:', { hoveredNodeId, snapPosition, hasTarget: !!hoveredNodeId });
       if (hoveredNodeId && snapPosition) {
         event.preventDefault();
         event.stopPropagation();
         console.log('Completing connection on mouseup:', { hoveredNodeId, snapPosition });
         onCompleteConnection(hoveredNodeId, snapPosition);
-      } else {
-        console.log('MouseUp - no valid target or snap position');
       }
     };
 
