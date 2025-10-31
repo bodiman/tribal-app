@@ -57,6 +57,7 @@ const convertToReactFlowEdges = (edges: Edge[], onEdgeUpdate?: (edge: Edge) => v
     id: edge.id,
     source: edge.source,
     target: edge.target,
+    // Omit sourceHandle and targetHandle to prevent React Flow validation errors
     type: 'tribal',
     markerEnd: edge.directed ? { type: MarkerType.ArrowClosed } : undefined,
     data: { edge, onEdgeUpdate },
@@ -233,23 +234,12 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
   const onConnect = useCallback(
     (params: Connection) => {
-      if (!params.source || !params.target) return;
-
-      const newEdge: Edge = {
-        id: `E${Date.now()}`,
-        source: params.source,
-        target: params.target,
-        directed: true,
-      };
-
-      const updatedGraph: Graph = {
-        ...graph,
-        edges: [...graph.edges, newEdge],
-      };
-
-      onGraphChange(updatedGraph);
+      // Disable React Flow's built-in connection system
+      // We handle connections manually through our custom ConnectionSystem
+      console.log('onConnect called but ignored (using custom connection system):', params);
+      return;
     },
-    [graph, onGraphChange]
+    []
   );
 
   const handleNodesChange = useCallback(
