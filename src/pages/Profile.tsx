@@ -1,8 +1,13 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Calendar } from 'lucide-react';
+import { User, Mail, Calendar, Trash2 } from 'lucide-react';
+import { DeleteAccountModal } from '../components/auth/DeleteAccountModal';
 
 export function Profile() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (!user) {
     return <div>Not authenticated</div>;
@@ -14,6 +19,12 @@ export function Profile() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleAccountDeleted = async () => {
+    // Clear authentication and redirect to home
+    await logout();
+    navigate('/', { replace: true });
   };
 
   return (
@@ -81,6 +92,13 @@ export function Profile() {
                     >
                       Sign Out
                     </button>
+                    <button 
+                      onClick={() => setShowDeleteModal(true)}
+                      className="w-full text-left px-4 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded-md transition-colors flex items-center space-x-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Account</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -110,6 +128,13 @@ export function Profile() {
           </div>
         </div>
       </div>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDeleted={handleAccountDeleted}
+        username={user.username}
+      />
     </div>
   );
 }

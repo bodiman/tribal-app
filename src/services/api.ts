@@ -166,6 +166,13 @@ export class ApiClient {
     return this.request<User>('/api/v1/auth/me');
   }
 
+  async deleteUser(password: string): Promise<void> {
+    return this.request<void>('/api/v1/auth/user', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
+    });
+  }
+
   // Graph methods
   async createGraph(data: CreateGraphRequest): Promise<ServerGraph> {
     return this.request<ServerGraph>('/api/v1/graphs', {

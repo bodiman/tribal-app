@@ -26,6 +26,7 @@ export const EdgeSchema = z.object({
     width: z.number(),
     height: z.number(),
   }).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const GraphSchema = z.object({

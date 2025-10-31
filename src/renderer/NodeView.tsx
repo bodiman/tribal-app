@@ -1,18 +1,20 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { type NodeProps } from 'reactflow';
 import { NodeResizer } from '@reactflow/node-resizer';
 import ReactMarkdown from 'react-markdown';
 import type { Node } from '../core/schema';
+import { ConnectionHandle } from './ConnectionHandle';
 
 import '@reactflow/node-resizer/dist/style.css';
 
 interface NodeData {
   node: Node;
   onNodeUpdate?: (updatedNode: Node) => void;
+  onStartConnection?: (sourceNodeId: string, handlePosition: 'top' | 'right' | 'bottom' | 'left') => void;
 }
 
 export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
-  const { node, onNodeUpdate } = data;
+  const { node, onNodeUpdate, onStartConnection } = data;
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [editLabel, setEditLabel] = useState(node.label);
@@ -149,7 +151,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
     <div
       ref={nodeRef}
       className={`
-        border-2 shadow-md min-w-48 max-w-none relative rounded-lg overflow-hidden flex flex-col
+        border-2 shadow-md min-w-48 max-w-none relative rounded-lg flex flex-col
         ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'}
         ${isEditingLabel || isEditingInfo ? 'border-blue-400 shadow-lg' : ''}
         hover:shadow-lg
@@ -162,32 +164,47 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
         minHeight: '6rem',
         maxWidth: '24rem',
         maxHeight: '20rem',
+        overflow: 'visible', // Allow handles to appear outside
       }}
     >
-      {/* Connection handles */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-gray-400"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-gray-400"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="w-3 h-3 bg-gray-400"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-3 h-3 bg-gray-400"
-      />
+      {/* Connection handles - only show when selected */}
+      {selected && onStartConnection && (
+        <>
+          <ConnectionHandle
+            nodeId={node.id}
+            position="top"
+            nodeWidth={localSize.width}
+            nodeHeight={localSize.height}
+            onStartConnection={onStartConnection}
+          />
+          <ConnectionHandle
+            nodeId={node.id}
+            position="right"
+            nodeWidth={localSize.width}
+            nodeHeight={localSize.height}
+            onStartConnection={onStartConnection}
+          />
+          <ConnectionHandle
+            nodeId={node.id}
+            position="bottom"
+            nodeWidth={localSize.width}
+            nodeHeight={localSize.height}
+            onStartConnection={onStartConnection}
+          />
+          <ConnectionHandle
+            nodeId={node.id}
+            position="left"
+            nodeWidth={localSize.width}
+            nodeHeight={localSize.height}
+            onStartConnection={onStartConnection}
+          />
+        </>
+      )}
 
-      {/* Title Section */}
-      <div className="px-2 py-3 bg-gray-50 border-b border-gray-200 rounded-t-md">
+      {/* Inner content container with overflow hidden */}
+      <div className="w-full h-full overflow-hidden rounded-lg flex flex-col">
+        {/* Title Section */}
+        <div className="px-2 py-3 bg-gray-50 border-b border-gray-200 rounded-t-md">
         {isEditingLabel ? (
           <input
             ref={inputRef}
@@ -292,6 +309,7 @@ export const NodeView: React.FC<NodeProps<NodeData>> = ({ data, selected }) => {
           <span className="text-white text-xs">✎</span>
         </div>
       )}
+      </div>
     </div>
   );
 };

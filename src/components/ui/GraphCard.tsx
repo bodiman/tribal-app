@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MoreVertical, Edit, Trash2, Copy, Share } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import type { ServerGraph } from '../../services/api';
@@ -14,10 +14,25 @@ interface GraphCardProps {
 
 export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const nodeCount = graph.nodes?.length || 0;
   const edgeCount = graph.edges?.length || 0;
   const lastUpdated = formatDistanceToNow(new Date(graph.updated_at), { addSuffix: true });
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this graph? This action cannot be undone.')) {
@@ -78,7 +93,7 @@ export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
             </div>
           </div>
           
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-md"
@@ -87,7 +102,7 @@ export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                 <Link
                   to={`/graph/${graph.id}`}
                   className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -127,7 +142,7 @@ export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-visible hover:shadow-md transition-shadow">
       {/* Graph Preview */}
       <Link to={`/graph/${graph.id}`}>
         <div className="aspect-video bg-gray-50 border-b border-gray-200 relative overflow-hidden">
@@ -181,7 +196,7 @@ export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
             )}
           </div>
           
-          <div className="relative ml-2">
+          <div className="relative ml-2" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
               className="p-1 text-gray-400 hover:text-gray-600 rounded"
@@ -190,7 +205,7 @@ export function GraphCard({ graph, viewMode, onUpdate }: GraphCardProps) {
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                 <Link
                   to={`/graph/${graph.id}`}
                   className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { type EdgeProps, getBezierPath, EdgeLabelRenderer, useReactFlow } from 'reactflow';
+import { type EdgeProps, getBezierPath, EdgeLabelRenderer } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import type { Edge } from '../core/schema';
 
@@ -21,29 +21,11 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
   selected,
 }) => {
   const { edge, onEdgeUpdate } = data || { edge: { id, source: '', target: '', directed: true } };
-  const [isEditingLabel, setIsEditingLabel] = useState(false);
-  const [isEditingInfo, setIsEditingInfo] = useState(false);
-  const [editLabel, setEditLabel] = useState(edge.label || '');
-  const [editMarkup, setEditMarkup] = useState(edge.markup || '');
-  const [localSize, setLocalSize] = useState(edge.size ?? { width: 128, height: 64 });
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editDescription, setEditDescription] = useState(edge.markup || '');
+  const [localSize, setLocalSize] = useState(edge.size ?? { width: 200, height: 80 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
-  const [_isResizing, setIsResizing] = useState(false);
-  const resizeStartRef = useRef<{ 
-    width: number; 
-    height: number; 
-    startX: number; 
-    startY: number;
-    resizeRight: boolean;
-    resizeLeft: boolean;
-    resizeBottom: boolean;
-    resizeTop: boolean;
-  } | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-
-  // Get ReactFlow instance for zoom-adjusted sensitivity
-  const { getZoom } = useReactFlow();
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -54,30 +36,20 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
     targetPosition,
   });
 
-  // Focus input/textarea when entering edit mode
+  // Focus textarea when entering edit mode
   useEffect(() => {
-    if (isEditingLabel && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditingLabel]);
-
-  useEffect(() => {
-    if (isEditingInfo && textareaRef.current) {
+    if (isEditingDescription && textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.select();
     }
-  }, [isEditingInfo]);
+  }, [isEditingDescription]);
 
   // Reset edit values when edge changes (but not while actively editing)
   useEffect(() => {
-    if (!isEditingLabel) {
-      setEditLabel(edge.label || '');
+    if (!isEditingDescription) {
+      setEditDescription(edge.markup || '');
     }
-    if (!isEditingInfo) {
-      setEditMarkup(edge.markup || '');
-    }
-  }, [edge.label, edge.markup, isEditingLabel, isEditingInfo]);
+  }, [edge.markup, isEditingDescription]);
 
   // Sync local size with edge size
   useEffect(() => {
@@ -86,198 +58,43 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
     }
   }, [edge.size]);
 
-  // Cleanup animation frame on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
 
-  const handleLabelDoubleClick = (e: React.MouseEvent) => {
+  const handleDescriptionDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsEditingLabel(true);
+    setIsEditingDescription(true);
   };
 
-  const handleInfoDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditingInfo(true);
-  };
-
-  const handleLabelSave = () => {
-    if (onEdgeUpdate && editLabel.trim() && editLabel !== edge.label) {
+  const handleDescriptionSave = () => {
+    if (onEdgeUpdate && editDescription !== edge.markup) {
+      const trimmedDescription = editDescription.trim() || undefined;
       onEdgeUpdate({
         ...edge,
-        label: editLabel.trim(),
+        markup: trimmedDescription,
       });
+      setEditDescription(trimmedDescription || '');
     }
-    setIsEditingLabel(false);
+    setIsEditingDescription(false);
   };
 
-  const handleInfoSave = () => {
-    if (onEdgeUpdate && editMarkup !== edge.markup) {
-      const trimmedMarkup = editMarkup.trim() || undefined;
-      onEdgeUpdate({
-        ...edge,
-        markup: trimmedMarkup,
-      });
-      setEditMarkup(trimmedMarkup || '');
-    }
-    setIsEditingInfo(false);
+  const handleDescriptionCancel = () => {
+    setEditDescription(edge.markup || '');
+    setIsEditingDescription(false);
   };
 
-  const handleLabelCancel = () => {
-    setEditLabel(edge.label || '');
-    setIsEditingLabel(false);
-  };
-
-  const handleInfoCancel = () => {
-    setEditMarkup(edge.markup || '');
-    setIsEditingInfo(false);
-  };
-
-  const handleLabelKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleLabelSave();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      handleLabelCancel();
-    }
-  };
-
-  const handleInfoKeyDown = (e: React.KeyboardEvent) => {
+  const handleDescriptionKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
-      handleInfoSave();
+      handleDescriptionSave();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      handleInfoCancel();
+      handleDescriptionCancel();
     }
   };
 
-  const handleLabelBlur = () => {
-    handleLabelSave();
+  const handleDescriptionBlur = () => {
+    handleDescriptionSave();
   };
 
-  const handleInfoBlur = () => {
-    handleInfoSave();
-  };
-
-  // Optimized custom resize handlers
-  const handleResizeStart = (e: React.MouseEvent, direction: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setIsResizing(true);
-    
-    // Disable CSS transitions for instant response (like regular nodes)
-    if (nodeRef.current) {
-      nodeRef.current.classList.add('resizing');
-    }
-    
-    // Pre-parse direction for performance
-    resizeStartRef.current = {
-      width: localSize.width,
-      height: localSize.height,
-      startX: e.clientX,
-      startY: e.clientY,
-      resizeRight: direction.includes('right'),
-      resizeLeft: direction.includes('left'),
-      resizeBottom: direction.includes('bottom'),
-      resizeTop: direction.includes('top'),
-    };
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!resizeStartRef.current || !nodeRef.current) return;
-
-      // Cancel any pending animation frame
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-
-      // Use requestAnimationFrame for smooth updates
-      animationFrameRef.current = requestAnimationFrame(() => {
-        if (!resizeStartRef.current || !nodeRef.current) return;
-
-        const deltaX = moveEvent.clientX - resizeStartRef.current.startX;
-        const deltaY = moveEvent.clientY - resizeStartRef.current.startY;
-
-        let newWidth = resizeStartRef.current.width;
-        let newHeight = resizeStartRef.current.height;
-
-        // Calculate zoom-adjusted sensitivity (inverse relationship)
-        const zoom = getZoom();
-        const sensitivity = 2 / zoom;
-
-        // Apply resize with double sensitivity to compensate for center positioning
-        if (resizeStartRef.current.resizeRight) {
-          newWidth = Math.max(128, resizeStartRef.current.width + deltaX * sensitivity);
-        }
-        if (resizeStartRef.current.resizeLeft) {
-          newWidth = Math.max(128, resizeStartRef.current.width - deltaX * sensitivity);
-        }
-        if (resizeStartRef.current.resizeBottom) {
-          newHeight = Math.max(64, resizeStartRef.current.height + deltaY * sensitivity);
-        }
-        if (resizeStartRef.current.resizeTop) {
-          newHeight = Math.max(64, resizeStartRef.current.height - deltaY * sensitivity);
-        }
-
-        // Direct DOM update for instant response
-        nodeRef.current.style.width = `${newWidth}px`;
-        nodeRef.current.style.height = `${newHeight}px`;
-      });
-    };
-
-    const handleMouseUp = () => {
-      if (!resizeStartRef.current) return;
-
-      setIsResizing(false);
-      
-      // Cancel any pending animation frame
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      
-      // Re-enable CSS transitions (like regular nodes)
-      if (nodeRef.current) {
-        nodeRef.current.classList.remove('resizing');
-      }
-      
-      // Get final size from DOM
-      const finalWidth = parseFloat(nodeRef.current?.style.width || '128');
-      const finalHeight = parseFloat(nodeRef.current?.style.height || '64');
-      const finalSize = { width: finalWidth, height: finalHeight };
-      
-      setLocalSize(finalSize);
-
-      if (onEdgeUpdate) {
-        onEdgeUpdate({
-          ...edge,
-          size: finalSize
-        });
-      }
-
-      resizeStartRef.current = null;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  // Custom resize handle style
-  const resizeHandleStyle = {
-    position: 'absolute' as const,
-    backgroundColor: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    zIndex: 10,
-  };
 
   return (
     <>
@@ -306,61 +123,37 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
           className={`
             border-2 shadow-md relative rounded-lg overflow-hidden flex flex-col
             ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'}
-            ${isEditingLabel || isEditingInfo ? 'border-blue-400 shadow-lg' : ''}
+            ${isEditingDescription ? 'border-blue-400 shadow-lg' : ''}
             hover:shadow-lg transition-all duration-200
           `}
         >
-          {/* Title Section */}
-          <div className="px-2 py-2 bg-gray-50 border-b border-gray-200 rounded-t-md">
-            {isEditingLabel ? (
-              <input
-                ref={inputRef}
-                type="text"
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                onKeyDown={handleLabelKeyDown}
-                onBlur={handleLabelBlur}
-                className="w-full text-center font-medium text-gray-800 bg-transparent border-none outline-none text-xs"
-                style={{ fontSize: 'inherit' }}
-              />
-            ) : (
-              <div 
-                className="font-medium text-gray-800 text-center cursor-pointer hover:bg-gray-100 rounded px-1 py-1 transition-colors text-xs"
-                onDoubleClick={handleLabelDoubleClick}
-                title="Double-click to edit"
-              >
-                {edge.label || 'Relationship'}
-              </div>
-            )}
-          </div>
-
-          {/* Info Section */}
-          <div className="px-3 py-2 bg-white rounded-b-md min-h-[1.5rem] flex flex-col flex-1 overflow-hidden h-0">
-            {isEditingInfo ? (
+          {/* Description Section */}
+          <div className="px-3 py-3 bg-white rounded-md min-h-[2rem] flex flex-col flex-1 overflow-hidden h-0">
+            {isEditingDescription ? (
               <textarea
                 ref={textareaRef}
-                value={editMarkup}
-                onChange={(e) => setEditMarkup(e.target.value)}
-                onKeyDown={handleInfoKeyDown}
-                onBlur={handleInfoBlur}
-                className="w-full h-full text-xs text-gray-600 bg-transparent border-none outline-none resize-none min-h-[1rem] px-1 py-0.5 flex-1"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                onKeyDown={handleDescriptionKeyDown}
+                onBlur={handleDescriptionBlur}
+                className="w-full h-full text-sm text-gray-600 bg-transparent border-none outline-none resize-none min-h-[1.5rem] px-1 py-0.5 flex-1"
                 placeholder="Add description (markdown supported)..."
                 style={{ fontSize: 'inherit' }}
               />
             ) : (
               <div 
-                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1rem] flex-1 flex items-start overflow-hidden max-h-full"
-                onDoubleClick={handleInfoDoubleClick}
-                title="Double-click to edit info"
+                className="cursor-pointer hover:bg-gray-50 rounded px-1 py-1 transition-colors min-h-[1.5rem] flex-1 flex items-start overflow-hidden max-h-full"
+                onDoubleClick={handleDescriptionDoubleClick}
+                title="Double-click to edit description"
               >
-                {(editMarkup || edge.markup) ? (
-                  <div className="prose prose-xs max-w-none text-gray-700 w-full overflow-hidden line-clamp-3">
+                {(editDescription || edge.markup) ? (
+                  <div className="prose prose-sm max-w-none text-gray-700 w-full overflow-hidden line-clamp-4">
                     <ReactMarkdown>
-                      {editMarkup || edge.markup || ''}
+                      {editDescription || edge.markup || ''}
                     </ReactMarkdown>
                   </div>
                 ) : (
-                  <div className="text-xs text-gray-400 italic text-center w-full">
+                  <div className="text-sm text-gray-400 italic text-center w-full">
                     Double-click to add description
                   </div>
                 )}
@@ -368,106 +161,6 @@ export const EdgeView: React.FC<EdgeProps<EdgeData>> = ({
             )}
           </div>
 
-          {/* Custom resize handles */}
-          {selected && (
-            <>
-              {/* Corner handles */}
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  top: '-8px',
-                  left: '-8px',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'nw-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'top-left')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  top: '-8px',
-                  right: '-8px',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'ne-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'top-right')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  bottom: '-8px',
-                  left: '-8px',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'sw-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'bottom-left')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  bottom: '-8px',
-                  right: '-8px',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'se-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
-              />
-              
-              {/* Side handles */}
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  top: '-4px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '32px',
-                  height: '8px',
-                  cursor: 'n-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'top')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  bottom: '-4px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '32px',
-                  height: '8px',
-                  cursor: 's-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'bottom')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  left: '-4px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '8px',
-                  height: '32px',
-                  cursor: 'w-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'left')}
-              />
-              <div
-                style={{
-                  ...resizeHandleStyle,
-                  right: '-4px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '8px',
-                  height: '32px',
-                  cursor: 'e-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart(e, 'right')}
-              />
-            </>
-          )}
 
           {/* Edit indicator */}
           {selected && (

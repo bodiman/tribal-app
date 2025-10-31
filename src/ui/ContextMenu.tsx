@@ -7,8 +7,8 @@ interface ContextMenuProps {
   isVisible: boolean;
   onClose: () => void;
   onAddNode?: () => void;
-  onAddEdge?: () => void;
-  onAddOutgoingEdge?: () => void;
+  onStartDirectedEdge?: () => void;
+  onStartUndirectedEdge?: () => void;
   contextNode?: Node | null;
 }
 
@@ -18,8 +18,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   isVisible,
   onClose,
   onAddNode,
-  onAddEdge,
-  onAddOutgoingEdge,
+  onStartDirectedEdge,
+  onStartUndirectedEdge,
   contextNode,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -57,16 +57,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }
   };
 
-  const handleAddEdge = () => {
-    if (onAddEdge) {
-      onAddEdge();
+  const handleStartDirectedEdge = () => {
+    if (onStartDirectedEdge) {
+      onStartDirectedEdge();
       onClose();
     }
   };
 
-  const handleAddOutgoingEdge = () => {
-    if (onAddOutgoingEdge) {
-      onAddOutgoingEdge();
+  const handleStartUndirectedEdge = () => {
+    if (onStartUndirectedEdge) {
+      onStartUndirectedEdge();
       onClose();
     }
   };
@@ -91,19 +91,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </div>
           )}
           <button
-            onClick={handleAddEdge}
+            onClick={handleStartUndirectedEdge}
             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
           >
             <span className="text-green-500">↔</span>
-            Add Edge
+            Add Undirected Edge
           </button>
           <button
-            onClick={handleAddOutgoingEdge}
+            onClick={handleStartDirectedEdge}
             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
           >
             <span className="text-blue-500">→</span>
-            Add Outgoing Edge
+            Add Directed Edge
           </button>
+          <div className="px-4 py-1 text-xs text-gray-500 border-t border-gray-200 mt-1">
+            Click another node to connect
+          </div>
         </>
       ) : (
         // Canvas context menu
