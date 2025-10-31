@@ -65,31 +65,35 @@ const getHandlePosition = (
   nodeSize: { width: number; height: number },
   handlePosition: 'top' | 'right' | 'bottom' | 'left'
 ): { x: number; y: number } => {
-  // Match ConnectionHandle.tsx exactly:
+  // EXACT match with ConnectionHandle.tsx getHandleStyle():
+  // - handleSize = 16px (width/height of blue circle)
+  // - offset = 8px (distance outside node border)
+  // - CSS positioning: top: `-${offset + handleSize/2}px` = -16px
+  // - This translates to: nodePosition.y - (offset + handleSize/2) = nodePosition.y - 16
   const handleSize = 16;
   const offset = 8; // Distance outside the node border
-  const halfHandle = handleSize / 2; // 8px
-  const totalOffset = offset + halfHandle; // 16px total
+  const totalOffset = offset + handleSize / 2; // 16px total (matches CSS calculation)
 
+  // Use React Flow coordinates directly (nodePosition = top-left of node)
   switch (handlePosition) {
     case 'top':
       return {
         x: nodePosition.x + nodeSize.width / 2, // Center horizontally
-        y: nodePosition.y - totalOffset, // Above node by total offset
+        y: nodePosition.y - totalOffset, // Above node
       };
     case 'right':
       return {
-        x: nodePosition.x + nodeSize.width + totalOffset, // Right of node by total offset
+        x: nodePosition.x + nodeSize.width + totalOffset, // Right of node
         y: nodePosition.y + nodeSize.height / 2, // Center vertically
       };
     case 'bottom':
       return {
         x: nodePosition.x + nodeSize.width / 2, // Center horizontally
-        y: nodePosition.y + nodeSize.height + totalOffset, // Below node by total offset
+        y: nodePosition.y + nodeSize.height + totalOffset, // Below node
       };
     case 'left':
       return {
-        x: nodePosition.x - totalOffset, // Left of node by total offset
+        x: nodePosition.x - totalOffset, // Left of node
         y: nodePosition.y + nodeSize.height / 2, // Center vertically
       };
   }
@@ -220,11 +224,11 @@ export const ConnectionSystem: React.FC<ConnectionSystemProps> = ({
   return (
     <div
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
+        width: '100vw',
+        height: '100vh',
         pointerEvents: 'none',
         zIndex: 1000,
       }}
@@ -240,7 +244,7 @@ export const ConnectionSystem: React.FC<ConnectionSystemProps> = ({
             id="connection-arrow"
             markerWidth="10"
             markerHeight="10"
-            refX="9"
+            refX="8.5"
             refY="3"
             orient="auto"
           >
